@@ -50,3 +50,7 @@ find_package(OpenGL REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE glfw3)
 target_link_libraries(${PROJECT_NAME} PRIVATE glew32)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${OPENGL_LIBRARIES})
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PROJECT_NAME}> "${PROJECT_BINARY_DIR}/fa-solid-900.ttf"
+)

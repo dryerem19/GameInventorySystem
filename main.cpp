@@ -6,6 +6,7 @@
 
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
+#include "IconsFontAwesome7.h"
 
 #include "storage.h"
 
@@ -25,8 +26,13 @@ float                           currentWeight = 0;
 Inventory::Storage              storage(MAX_INVENTORY_WEIGHT);
 std::vector<Inventory::Item>    availableItems = {
     {1, "Water", "Bottle of water", 0.6f},
-    {2, "Sword", "Weapon", 3.5f},
-    {3, "Apple", "Food", 0.2f}
+    {2, "Gun", "Weapon", 3.5f},
+    {3, "Burger", "Food", 0.2f}
+};
+std::vector<std::string>        itemIcons = {
+    ICON_FA_BOTTLE_WATER,
+    ICON_FA_GUN,
+    ICON_FA_BURGER
 };
 
 void draw_inventory(void)
@@ -59,9 +65,10 @@ void draw_available_items(void)
 {
     ImGui::Begin("Items", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
     {
-        if (ImGui::BeginTable("ItemsTable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+        if (ImGui::BeginTable("ItemsTable", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
         {
             ImGui::TableSetupColumn("Item");
+            ImGui::TableSetupColumn("Icon");
             ImGui::TableSetupColumn("Weight");
             ImGui::TableSetupColumn("Action");
             ImGui::TableHeadersRow();
@@ -74,9 +81,12 @@ void draw_available_items(void)
                 ImGui::Text("%s", availableItems[i].name().c_str());
 
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%.1f", availableItems[i].weight());
+                ImGui::Text("%s", itemIcons[i].c_str());
 
                 ImGui::TableSetColumnIndex(2);
+                ImGui::Text("%.1f", availableItems[i].weight());
+
+                ImGui::TableSetColumnIndex(3);
                 if (ImGui::Button(("Append##" + std::to_string(i)).c_str())) {
                     storage.addItem(std::make_unique<Inventory::Item>(availableItems[i]));
                 }
@@ -129,6 +139,17 @@ int main(void)
     ImGuiStyle& style = ImGui::GetStyle();
     style.ScaleAllSizes(scale);
     style.FontScaleDpi = scale;
+
+    io.Fonts->AddFontDefault();
+    float baseFontSize = 13.0f; // 13.0f is the size of the default font. Change to the font size you use.
+    float iconFontSize = baseFontSize * 2.0f / 3.0f; // FontAwesome fonts need to have their sizes reduced by 2.0f/3.0f in order to align correctly
+
+    static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_16_FA, 0 };
+    ImFontConfig icons_config;
+    icons_config.MergeMode = true;
+    icons_config.PixelSnapH = true;
+    icons_config.GlyphMinAdvanceX = iconFontSize;
+    io.Fonts->AddFontFromFileTTF( "fa-solid-900.ttf", iconFontSize, &icons_config, icons_ranges );
 
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);
