@@ -8,7 +8,26 @@ namespace Inventory {
     class Item
     {
     public:
+        Item(uint32_t id = 0, const std::string& name = std::string(),
+             const std::string& description = std::string(), float weight = 0.0f)
+            : id_(id)
+            , name_(name)
+            , description_(description)
+            , weight_(weight) {}
+
         virtual ~Item() = default;
+
+        void setName(const std::string& name) {
+            name_ = name;
+        }
+
+        void setDescription(const std::string& description) {
+            description_ = description;
+        }
+
+        void setWeight(float weight) {
+            weight_ = weight;
+        }
 
         inline uint32_t             id()            const { return id_; }
         inline const std::string    name()          const { return name_; }

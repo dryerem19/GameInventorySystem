@@ -7,6 +7,8 @@
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
 
+#include "storage.h"
+
 #define WIDTH   800
 #define HEIGHT  600
 #define TITLE   "Inventory System Demo"
@@ -19,7 +21,13 @@
 #define MAX_INVENTORY_WEIGHT        100.0f
 #define INVENTORY_BORDER_COLOR      IM_COL32(200, 200, 200, 255)
 
-float currentWeight = 0;
+float                           currentWeight = 0;
+Inventory::Storage              storage(MAX_INVENTORY_WEIGHT);
+std::vector<Inventory::Item>    availableItems = {
+    {1, "Water", "Bottle of water", 0.6f},
+    {2, "Sword", "Weapon", 3.5f},
+    {3, "Apple", "Food", 0.2f}
+};
 
 void draw_inventory(void)
 {
@@ -42,7 +50,40 @@ void draw_inventory(void)
         }
 
         ImGui::SetCursorPosY(ImGui::GetCursorPosY());
-        ImGui::Text("Weight: %.1f / %.1f", currentWeight, MAX_INVENTORY_WEIGHT);
+        ImGui::Text("Weight: %.1f / %.1f", storage.currentWeight(), storage.maxWeight());
+    }
+    ImGui::End();
+}
+
+void draw_available_items(void)
+{
+    ImGui::Begin("Items", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+    {
+        if (ImGui::BeginTable("ItemsTable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+        {
+            ImGui::TableSetupColumn("Item");
+            ImGui::TableSetupColumn("Weight");
+            ImGui::TableSetupColumn("Action");
+            ImGui::TableHeadersRow();
+
+            for (size_t i = 0; i < availableItems.size(); i++)
+            {
+                ImGui::TableNextRow();
+
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("%s", availableItems[i].name().c_str());
+
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%.1f", availableItems[i].weight());
+
+                ImGui::TableSetColumnIndex(2);
+                if (ImGui::Button(("Append##" + std::to_string(i)).c_str())) {
+                    storage.addItem(std::make_unique<Inventory::Item>(availableItems[i]));
+                }
+            }
+
+            ImGui::EndTable();
+        }
     }
     ImGui::End();
 }
@@ -107,6 +148,7 @@ int main(void)
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+        draw_available_items();
         draw_inventory();
 
         // Rendering
