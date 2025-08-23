@@ -49,13 +49,14 @@ void draw_inventory(void)
         for (int y = 0; y < storage.rows(); y++) {
             for (int x = 0; x < storage.cols(); x++)
             {
+                // Draw inventory cell
                 ImVec2 cellMin(cursorPos.x + x * INVENTORY_CELL_SIZE, cursorPos.y + y * INVENTORY_CELL_SIZE);
                 ImVec2 cellMax(cellMin.x + INVENTORY_CELL_SIZE, cellMin.y + INVENTORY_CELL_SIZE);
                 drawList->AddRect(cellMin, cellMax, INVENTORY_BORDER_COLOR);                
 
-                auto item = storage.getItem(y, x);
-                if (item)
+                if (const auto item = storage.getItem(y, x))
                 {
+                    // Draw item icon
                     int         iconIndex   = y * storage.cols() + x;
                     const char* iconFont    = itemIcons[iconIndex].c_str();
                     ImVec2      iconSize    = ImGui::CalcTextSize(iconFont);
@@ -66,6 +67,7 @@ void draw_inventory(void)
 
                     drawList->AddText(iconPos, IM_COL32(255, 255, 255, 255), iconFont);
 
+                    // Draw itew weight
                     char buffer[16];
                     snprintf(buffer, sizeof(buffer), "%.1f", item->weight() * item->stackCount());
 
@@ -77,6 +79,35 @@ void draw_inventory(void)
                     );
 
                     drawList->AddText(weightPos, IM_COL32(180, 180, 180, 255), weightText.c_str());
+
+                    // Draw item popup (help message)
+                    ImVec2 mousePos = ImGui::GetMousePos();
+                    if (mousePos.x >= cellMin.x && mousePos.x <= cellMax.x &&
+                        mousePos.y >= cellMin.y && mousePos.y <= cellMax.y)
+                    {
+                        ImGui::BeginTooltip();
+                        {
+                            // Fixed popup window size
+                            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 20.0f);
+
+                            // Title
+                            ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.0f, 1.0f), "%s", item->name().c_str());
+                            ImGui::Separator();
+
+                            // Description
+                            if (!item->description().empty()) {
+                                ImGui::TextWrapped("%s", item->description().c_str());
+                                ImGui::Spacing();
+                            }
+
+                            ImGui::Text("Count: %d", item->stackCount());
+                            ImGui::Text("Weight: %.1f", item->weight());
+                            ImGui::Text("Total weight: %.1f", item->weight() * item->stackCount());
+
+                            ImGui::PopTextWrapPos();
+                        }
+                        ImGui::EndTooltip();
+                    }
                 }
             }
         }
