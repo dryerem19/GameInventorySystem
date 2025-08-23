@@ -17,10 +17,12 @@ namespace Inventory {
             ItemNotFound,
         };
 
-        explicit Storage(float maxWeight = -1.0f);
+        explicit Storage(int rows, int cols, float maxWeight = -1.0f);
 
-        inline float maxWeight()        const { return maxWeight_; }
-        inline float currentWeight()    const { return currentWeight_; }
+        inline int      rows()              const   { return rows_; }
+        inline int      cols()              const   { return cols_; }
+        inline float    maxWeight()         const   { return maxWeight_; }
+        inline float    currentWeight()     const   { return currentWeight_; }
 
         bool    hasItem(uint32_t id)                const;
         Item*   findItemById(uint32_t id)           const;
@@ -32,11 +34,13 @@ namespace Inventory {
         std::unique_ptr<Item>   removeItemById(uint32_t id);
 
     private:
-        using Container = std::vector<std::unique_ptr<Item>>;
+        using ItemPtr   = std::unique_ptr<Item>;
 
-        float       maxWeight_;
-        float       currentWeight_;
-        Container   items_;
+        int                     rows_;
+        int                     cols_;
+        float                   maxWeight_;
+        float                   currentWeight_;
+        std::vector<ItemPtr>    items_;
     };
 }
 

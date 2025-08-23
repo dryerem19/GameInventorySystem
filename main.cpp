@@ -17,13 +17,10 @@
 #define INVENTORY_ROWS              5
 #define INVENTORY_COLUMNS           10
 #define INVENTORY_CELL_SIZE         32
-#define INVENTORY_WIDTH             INVENTORY_COLUMNS * INVENTORY_CELL_SIZE
-#define INVENTORY_HEIGHT            INVENTORY_ROWS * INVENTORY_CELL_SIZE
-#define MAX_INVENTORY_WEIGHT        100.0f
 #define INVENTORY_BORDER_COLOR      IM_COL32(200, 200, 200, 255)
 
 float                           currentWeight = 0;
-Inventory::Storage              storage(MAX_INVENTORY_WEIGHT);
+Inventory::Storage              storage(5, 10, 100);
 std::vector<Inventory::Item>    availableItems = {
     {1, "Water", "Bottle of water", 0.6f},
     {2, "Gun", "Weapon", 3.5f},
@@ -37,18 +34,20 @@ std::vector<std::string>        itemIcons = {
 
 void draw_inventory(void)
 {
+    int width   = storage.cols() * INVENTORY_CELL_SIZE;
+    int height  = storage.rows() * INVENTORY_CELL_SIZE;
+
     ImGui::Begin("Inventory", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
     {
         // Invisible widget so that autoresize works correctly
-        ImGui::InvisibleButton("##inventory_grid",
-                               ImVec2(INVENTORY_WIDTH, INVENTORY_HEIGHT));
+        ImGui::InvisibleButton("##inventory_grid", ImVec2(width, height));
 
         ImDrawList* drawList = ImGui::GetWindowDrawList();
         ImVec2 cursorPos = ImGui::GetCursorScreenPos();
-        cursorPos.y -= INVENTORY_HEIGHT; // Drawing on top of an invisible widget
+        cursorPos.y -= height; // Drawing on top of an invisible widget
 
-        for (int y = 0; y < INVENTORY_ROWS; y++) {
-            for (int x = 0; x < INVENTORY_COLUMNS; x++) {
+        for (int y = 0; y < storage.rows(); y++) {
+            for (int x = 0; x < storage.cols(); x++) {
                 ImVec2 cellMin(cursorPos.x + x * INVENTORY_CELL_SIZE, cursorPos.y + y * INVENTORY_CELL_SIZE);
                 ImVec2 cellMax(cellMin.x + INVENTORY_CELL_SIZE, cellMin.y + INVENTORY_CELL_SIZE);
                 drawList->AddRect(cellMin, cellMax, INVENTORY_BORDER_COLOR);

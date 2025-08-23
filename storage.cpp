@@ -2,9 +2,13 @@
 #include <algorithm>
 
 namespace Inventory {
-    Storage::Storage(float maxWeight)
-        : maxWeight_(maxWeight)
-        , currentWeight_(0.0f) {}
+    Storage::Storage(int rows, int cols, float maxWeight)
+    : rows_(rows)
+    , cols_(cols)
+    , maxWeight_(maxWeight)
+    , currentWeight_(0.0f) {
+        items_.reserve(rows_ * cols_);
+    }
 
     bool Storage::hasItem(uint32_t id) const
     {
