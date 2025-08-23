@@ -16,7 +16,7 @@
 
 #define INVENTORY_ROWS              5
 #define INVENTORY_COLUMNS           10
-#define INVENTORY_CELL_SIZE         32
+#define INVENTORY_CELL_SIZE         40
 #define INVENTORY_BORDER_COLOR      IM_COL32(200, 200, 200, 255)
 
 float                           currentWeight = 0;
@@ -47,10 +47,37 @@ void draw_inventory(void)
         cursorPos.y -= height; // Drawing on top of an invisible widget
 
         for (int y = 0; y < storage.rows(); y++) {
-            for (int x = 0; x < storage.cols(); x++) {
+            for (int x = 0; x < storage.cols(); x++)
+            {
                 ImVec2 cellMin(cursorPos.x + x * INVENTORY_CELL_SIZE, cursorPos.y + y * INVENTORY_CELL_SIZE);
                 ImVec2 cellMax(cellMin.x + INVENTORY_CELL_SIZE, cellMin.y + INVENTORY_CELL_SIZE);
-                drawList->AddRect(cellMin, cellMax, INVENTORY_BORDER_COLOR);
+                drawList->AddRect(cellMin, cellMax, INVENTORY_BORDER_COLOR);                
+
+                auto item = storage.getItem(y, x);
+                if (item)
+                {
+                    int         iconIndex   = y * storage.cols() + x;
+                    const char* iconFont    = itemIcons[iconIndex].c_str();
+                    ImVec2      iconSize    = ImGui::CalcTextSize(iconFont);
+                    ImVec2      iconPos(
+                        cellMin.x + (INVENTORY_CELL_SIZE - iconSize.x) * 0.5f,
+                        cellMin.y + (INVENTORY_CELL_SIZE - iconSize.y) * 0.5f
+                    );
+
+                    drawList->AddText(iconPos, IM_COL32(255, 255, 255, 255), iconFont);
+
+                    char buffer[16];
+                    snprintf(buffer, sizeof(buffer), "%.1f", item->weight() * item->stackCount());
+
+                    std::string weightText = buffer;
+                    ImVec2      weightSize = ImGui::CalcTextSize(weightText.c_str());
+                    ImVec2      weightPos(
+                        cellMax.x - weightSize.x - 2,
+                        cellMax.y - weightSize.y - 2
+                    );
+
+                    drawList->AddText(weightPos, IM_COL32(180, 180, 180, 255), weightText.c_str());
+                }
             }
         }
 
