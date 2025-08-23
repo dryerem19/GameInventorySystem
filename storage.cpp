@@ -7,7 +7,7 @@ namespace Inventory {
     , cols_(cols)
     , maxWeight_(maxWeight)
     , currentWeight_(0.0f) {
-        items_.reserve(rows_ * cols_);
+        items_.resize(rows_ * cols_);
     }
 
     bool Storage::hasItem(uint32_t id) const
@@ -22,6 +22,46 @@ namespace Inventory {
                                [id](const std::unique_ptr<Item>& ptr) { return ptr->id() == id; });
 
         return it != items_.end() ? it->get() : nullptr;
+    }
+
+    Item *Storage::getItem(int row, int col) const
+    {
+        if (!isValidPosition(row, col)) return nullptr;
+        return items_[row * cols_ + col].get();
+    }
+
+    int Storage::getFreeCell() const
+    {
+        for (int row = 0; row < rows_; row++) {
+            for (int col = 0; col < cols_; col++)
+            {
+                int index = isFreeCell(row, col);
+                if (index >= 0) {
+                    return index;
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    int Storage::isFreeCell(int row, int col) const
+    {
+        if (!isValidPosition(row, col)) {
+            return -1;
+        }
+
+        int index = row * cols_ + col;
+        if (!items_[index]) {
+            return index;
+        }
+
+        return -1;
+    }
+
+    bool Storage::isValidPosition(int row, int col) const
+    {
+        return row >= 0 && row < rows_ && col >= 0 && col < cols_;
     }
 
     Storage::Error Storage::canAddItem(const Item *item) const
@@ -51,17 +91,32 @@ namespace Inventory {
             return Error::NoSpace;
         }
 
-        for (auto& existingItem : items_) {
-            if (existingItem->canStackWith(item.get())) {
-                existingItem->addToStack(item->stackCount());
-                currentWeight_ += item->weight();
-                return Error::Success;
+        for (int row = 0; row < rows_; row++) {
+            for (int col = 0; col < cols_; col++)
+            {
+                int index = row * cols_ + col;
+                auto existingItem = items_[index].get();
+                if (!existingItem) {
+                    continue;
+                }
+
+                if (existingItem->canStackWith(item.get())) {
+                    existingItem->addToStack(item->stackCount());
+                    currentWeight_ += item->weight();
+                    return Error::Success;
+                }
             }
         }
 
-        currentWeight_ += item->weight();
-        items_.push_back(std::move(item));
-        return Error::Success;
+        int index = getFreeCell();
+        if (index >= 0)
+        {
+            currentWeight_ += item->weight();
+            items_[index] = std::move(item);
+            return Error::Success;
+        }
+
+        return Error::NoSpace;
     }
 
     void Storage::clear()

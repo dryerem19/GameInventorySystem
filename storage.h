@@ -29,6 +29,11 @@ namespace Inventory {
         Error   canAddItem(const Item* item)        const;
         Error   addItem(std::unique_ptr<Item> item);
 
+        Item*   getItem(int row, int col)           const;
+        int     getFreeCell()                       const;
+        int     isFreeCell(int row, int col)        const;
+        bool    isValidPosition(int row, int col)   const;
+
         void                    clear();
         std::unique_ptr<Item>   removeItem(Item* item);
         std::unique_ptr<Item>   removeItemById(uint32_t id);
